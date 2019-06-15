@@ -1,0 +1,29 @@
+#!/usr/bin/env escript
+%% -*- erlang -*-
+%%! -smp enable -sname check_enode -start_epmd false -mnesia debug verbose
+%%
+%% this script should be placed into /opt/utils
+%% author: Elmir Karimullin, elmir.karimullin@gmail.com
+%% beta version
+%% minimal maintenance tool to get some maintenance data
+%% from Erlang Beam that runs enode release
+
+main([]) ->
+    try
+        %%N = list_to_integer(String),
+        {ok, Hostname} = inet:gethostname(),
+        Node= list_to_atom("enode@" ++ Hostname),
+        erlang:set_cookie(Node, smsrouter),
+        true = net_kernel:connect_node(Node),
+        Result = rpc:call(Node, maintainer, check_enode, []),
+        io:format("~w\n", [Result])
+    catch
+        _:_ ->
+            usage()
+    end;
+main(_) ->
+    usage().
+
+usage() ->
+    io:format("usage: check_enode\n"),
+    halt(1).
